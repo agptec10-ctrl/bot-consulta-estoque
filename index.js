@@ -88,7 +88,9 @@ async function buscarProdutos(termoBusca, produtos) {
   let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
   for (let i = 0; i < Math.min(resultados.length, 10); i++) {
     const p = resultados[i];
-    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
+const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
   }
   return resposta;
 }
