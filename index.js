@@ -113,7 +113,6 @@ async function buscarProdutos(termoBusca, produtos) {
   // Nenhuma palavra encontrou nada
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
 }
-}
 
 async function estoqueBaixo(produtos) {
   const baixos = produtos.filter(p => {
