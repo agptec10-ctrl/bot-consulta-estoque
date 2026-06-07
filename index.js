@@ -131,15 +131,8 @@ async function estoqueBaixo(produtos) {
   }
   return resposta;
 }
-
-// ... todo o código existente ...
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`));
-
-
-
-
 
 // ==========================================
 // ⚙️ SETOR DE CONFIGURAÇÕES (ALTERE APENAS AQUI)
@@ -152,17 +145,3 @@ const CONFIG = {
   MOSTRAR_PRECO: true,
   MOSTRAR_EMOJI_ESTOQUE: true
 };
-
-
-
-
-
-
-
-
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Bot rodando na porta ${PORT}`);
-  console.log(`📡 Webhook URL: https://bot-consulta-estoque.onrender.com/webhook`);
-});
