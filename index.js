@@ -110,6 +110,35 @@ async function estoqueBaixo(produtos) {
   return resposta;
 }
 
+// ... todo o código existente ...
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`));
+
+
+
+
+
+// ==========================================
+// ⚙️ SETOR DE CONFIGURAÇÕES (ALTERE APENAS AQUI)
+// ==========================================
+
+const CONFIG = {
+  MAX_RESULTADOS: 5,
+  BUSCAR_POR_NOME: true,
+  BUSCAR_POR_SKU: true,
+  MOSTRAR_PRECO: true,
+  MOSTRAR_EMOJI_ESTOQUE: true
+};
+
+
+
+
+
+
+
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Bot rodando na porta ${PORT}`);
