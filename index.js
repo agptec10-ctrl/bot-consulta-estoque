@@ -86,6 +86,28 @@ async function buscarProdutos(termoBusca, produtos) {
   }
   
   let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
+  
+  // USANDO A CONFIGURAÇÃO
+  const limite = CONFIG.MAX_RESULTADOS || 5;
+  
+  for (let i = 0; i < Math.min(resultados.length, limite); i++) {
+    const p = resultados[i];
+    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
+  }
+  return resposta;
+}
+
+  const termo = termoBusca.toLowerCase();
+  const resultados = produtos.filter(p => 
+    (p[1] || "").toLowerCase().includes(termo) || 
+    (p[2] || "").toLowerCase().includes(termo)
+  );
+  
+  if (resultados.length === 0) {
+    return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
+  }
+  
+  let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
   for (let i = 0; i < Math.min(resultados.length, 5); i++) {
     const p = resultados[i];
     resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
