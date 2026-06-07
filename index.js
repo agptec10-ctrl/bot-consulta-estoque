@@ -16,12 +16,12 @@ app.post('/webhook', async (req, res) => {
     const chatId = message.chat.id;
     const texto = message.text;
     
-    console.log(`📨 Mensagem: ${texto}`);
+    console.log(`Mensagem: ${texto}`);
     
     let resposta;
     
     if (texto === "/start") {
-      resposta = "🤖 Bot de Consulta de Estoque\n\nEnvie o nome do produto ou SKU";
+      resposta = "Bot de Consulta de Estoque - Envie o nome do produto";
     } else if (texto === "/estoque_baixo") {
       const produtos = await buscarPlanilha();
       resposta = await estoqueBaixo(produtos);
@@ -30,12 +30,20 @@ app.post('/webhook', async (req, res) => {
       resposta = await buscarProdutos(texto, produtos);
     }
     
-    await enviarMensagem(chatId, resposta);
+    await axios.post(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+      chat_id: chatId,
+      text: resposta
+    });
+    
     res.sendStatus(200);
   } catch (error) {
-    console.error("Erro:", error.message);
+    console.log("Erro:", error.message);
     res.sendStatus(200);
   }
+});
+
+app.get('/', (req, res) => {
+  res.send('Bot online');
 });
 
 async function buscarPlanilha() {
@@ -49,27 +57,24 @@ async function buscarPlanilha() {
     const row = data.table.rows[i];
     produtos.push(row.c.map(cell => cell ? cell.v : ""));
   }
-  console.log(`📊 Planilha: ${produtos.length} produtos`);
   return produtos;
 }
 
 async function buscarProdutos(termoBusca, produtos) {
-  const termo = termoBusca.toLowerCase().trim();
+  const termo = termoBusca.toLowerCase();
   const resultados = produtos.filter(p => 
-    p[1]?.toLowerCase().includes(termo) || 
-    p[2]?.toLowerCase().includes(termo)
+    (p[1] || "").toLowerCase().includes(termo) || 
+    (p[2] || "").toLowerCase().includes(termo)
   );
   
   if (resultados.length === 0) {
-    return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
+    return `Nenhum produto encontrado para: "${termoBusca}"`;
   }
   
-  let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
-  for (let i = 0; i < Math.min(resultados.length, 10); i++) {
+  let resposta = `${resultados.length} produto(s) encontrado(s):\n\n`;
+  for (let i = 0; i < Math.min(resultados.length, 5); i++) {
     const p = resultados[i];
-    const estoque = p[3] || 0;
-    const preco = p[4] || 0;
-    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${estoque}\nPreço: R$ ${preco}\n-------------------\n`;
+    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
   }
   return resposta;
 }
@@ -81,26 +86,15 @@ async function estoqueBaixo(produtos) {
   });
   
   if (baixos.length === 0) {
-    return "✅ Nenhum produto com estoque baixo";
+    return "Nenhum produto com estoque baixo";
   }
   
-  let resposta = `⚠️ ESTOQUE BAIXO (<10):\n\n`;
+  let resposta = `PRODUTOS COM ESTOQUE BAIXO:\n\n`;
   for (const p of baixos) {
-    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\n⚠️ Estoque: ${p[3]}\n---\n`;
+    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3]}\n---\n`;
   }
   return resposta;
 }
 
-async function enviarMensagem(chatId, texto) {
-  const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
-  await axios.post(url, { chat_id: chatId, text: texto });
-}
-
-app.get('/', (req, res) => {
-  res.send('✅ Bot está online!');
-});
-
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`🚀 Bot rodando na porta ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`));
