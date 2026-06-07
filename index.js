@@ -8,9 +8,24 @@ const TOKEN = "8748488253:AAE3mEFhsQOWTVZQy9QBB1sbcC8fB40zHZM";
 const SHEET_ID = "1b11H23SDAjJzwXBINRGgyCcOEoOhTIXOMX_qSU-5SbQ";
 const SHEET_NAME = "ANUNCIOS";
 
-// Teste do token
-console.log("Token configurado:", TOKEN.substring(0, 10) + "...");
+// ==========================================
+// FUNÇÃO PARA REMOVER ACENTOS
+// ==========================================
+function removerAcentos(texto) {
+  const acentos = {
+    'á': 'a', 'à': 'a', 'ã': 'a', 'â': 'a', 'ä': 'a',
+    'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
+    'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
+    'ó': 'o', 'ò': 'o', 'õ': 'o', 'ô': 'o', 'ö': 'o',
+    'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
+    'ç': 'c', 'ñ': 'n'
+  };
+  return texto.replace(/[áàãâäéèêëíìîïóòõôöúùûüçñ]/gi, letra => acentos[letra] || letra);
+}
 
+// ==========================================
+// WEBHOOK DO TELEGRAM
+// ==========================================
 app.post('/webhook', async (req, res) => {
   try {
     const message = req.body.message;
@@ -22,7 +37,6 @@ app.post('/webhook', async (req, res) => {
     const texto = message.text;
     
     console.log(`Mensagem recebida: ${texto}`);
-    console.log(`Chat ID: ${chatId}`);
     
     let resposta;
     
@@ -35,35 +49,18 @@ app.post('/webhook', async (req, res) => {
     }
     else {
       const produtos = await buscarPlanilha();
-
-function removerAcentos(texto) {
-  const acentos = {
-    'á': 'a', 'à': 'a', 'ã': 'a', 'â': 'a', 'ä': 'a',
-    'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
-    'í': 'i', 'ì': 'i', 'î': 'i', 'ï': 'i',
-    'ó': 'o', 'ò': 'o', 'õ': 'o', 'ô': 'o', 'ö': 'o',
-    'ú': 'u', 'ù': 'u', 'û': 'u', 'ü': 'u',
-    'ç': 'c', 'ñ': 'n'
-  };
-  return texto.replace(/[áàãâäéèêëíìîïóòõôöúùûüçñ]/gi, letra => acentos[letra] || letra);
-}
-      
       resposta = await buscarProdutos(texto, produtos);
     }
     
-    console.log("Enviando resposta para o Telegram...");
-    
-    const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
-    const response = await axios.post(url, {
+    await axios.post(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
       chat_id: chatId,
       text: resposta
     });
     
-    console.log("Resposta enviada com sucesso!");
     res.sendStatus(200);
     
   } catch (error) {
-    console.log("ERRO DETALHADO:", error.response?.data || error.message);
+    console.log("Erro:", error.message);
     res.sendStatus(200);
   }
 });
@@ -72,6 +69,9 @@ app.get('/', (req, res) => {
   res.send('✅ Bot está online!');
 });
 
+// ==========================================
+// BUSCAR DADOS NA PLANILHA
+// ==========================================
 async function buscarPlanilha() {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
   const response = await axios.get(url);
@@ -87,8 +87,10 @@ async function buscarPlanilha() {
   return produtos;
 }
 
+// ==========================================
+// BUSCAR PRODUTOS (COM ACENTOS E MULTIPLAS PALAVRAS)
+// ==========================================
 async function buscarProdutos(termoBusca, produtos) {
-  // Remove acentos da busca
   const termoSemAcento = removerAcentos(termoBusca.toLowerCase());
   const palavras = termoSemAcento.trim().split(/\s+/);
   
@@ -96,11 +98,9 @@ async function buscarProdutos(termoBusca, produtos) {
     const termosBusca = palavras.slice(0, numPalavras);
     
     const resultados = produtos.filter(p => {
-      // Remove acentos do título e SKU
       const titulo = removerAcentos((p[1] || "").toLowerCase());
       const sku = removerAcentos((p[2] || "").toLowerCase());
       const textoBusca = titulo + " " + sku;
-      
       return termosBusca.every(palavra => textoBusca.includes(palavra));
     });
     
@@ -109,8 +109,8 @@ async function buscarProdutos(termoBusca, produtos) {
       
       for (let i = 0; i < Math.min(resultados.length, 10); i++) {
         const p = resultados[i];
-        let estoque = p[3] || 0;
-        let emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
+        const estoque = p[3] || 0;
+        const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
         const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
         const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
         
@@ -123,6 +123,9 @@ async function buscarProdutos(termoBusca, produtos) {
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
 }
 
+// ==========================================
+// ESTOQUE BAIXO
+// ==========================================
 async function estoqueBaixo(produtos) {
   const baixos = produtos.filter(p => {
     const estoque = p[3] || 0;
@@ -135,13 +138,16 @@ async function estoqueBaixo(produtos) {
   
   let resposta = `⚠️ ESTOQUE BAIXO (<10):\n\n`;
   for (const p of baixos) {
-    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\n⚠️ Estoque: ${p[3]}\n---\n`;
+    const estoque = p[3] || 0;
+    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\n⚠️ Estoque: ${estoque}\n---\n`;
   }
   return resposta;
 }
 
+// ==========================================
+// INICIAR SERVIDOR
+// ==========================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Bot rodando na porta ${PORT}`);
-  console.log(`📡 Webhook URL: https://bot-consulta-estoque.onrender.com/webhook`);
 });
