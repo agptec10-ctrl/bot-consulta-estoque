@@ -75,26 +75,23 @@ async function buscarPlanilha() {
 }
 
 async function buscarProdutos(termoBusca, produtos) {
-  // Divide a busca em palavras
-  const palavras = termoBusca.toLowerCase().trim().split(/\s+/);
+  // Remove acentos da busca
+  const termoSemAcento = removerAcentos(termoBusca.toLowerCase());
+  const palavras = termoSemAcento.trim().split(/\s+/);
   
-  // Tenta do maior número de palavras para o menor
   for (let numPalavras = palavras.length; numPalavras >= 1; numPalavras--) {
-    // Pega as primeiras 'numPalavras' palavras
     const termosBusca = palavras.slice(0, numPalavras);
     
-    // Filtra produtos que contenham TODAS as palavras atuais
     const resultados = produtos.filter(p => {
-      const titulo = (p[1] || "").toLowerCase();
-      const sku = (p[2] || "").toLowerCase();
+      // Remove acentos do título e SKU
+      const titulo = removerAcentos((p[1] || "").toLowerCase());
+      const sku = removerAcentos((p[2] || "").toLowerCase());
       const textoBusca = titulo + " " + sku;
       
-      // Verifica se contém todas as palavras
       return termosBusca.every(palavra => textoBusca.includes(palavra));
     });
     
     if (resultados.length > 0) {
-      // Encontrou resultados com 'numPalavras' palavras
       let resposta = `🔍 ${resultados.length} produto(s) encontrado(s) com ${numPalavras} palavra(s):\n\n`;
       
       for (let i = 0; i < Math.min(resultados.length, 10); i++) {
@@ -110,7 +107,6 @@ async function buscarProdutos(termoBusca, produtos) {
     }
   }
   
-  // Nenhuma palavra encontrou nada
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
 }
 
