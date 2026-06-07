@@ -86,7 +86,7 @@ async function buscarProdutos(termoBusca, produtos) {
   }
   
   let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
-  for (let i = 0; i < Math.min(resultados.length, 5); i++) {
+  for (let i = 0; i < Math.min(resultados.length, 10); i++) {
     const p = resultados[i];
     resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
   }
