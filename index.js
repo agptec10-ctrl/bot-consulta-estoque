@@ -86,28 +86,6 @@ async function buscarProdutos(termoBusca, produtos) {
   }
   
   let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
-  
-  // USANDO A CONFIGURAÇÃO
-  const limite = CONFIG.MAX_RESULTADOS || 5;
-  
-  for (let i = 0; i < Math.min(resultados.length, limite); i++) {
-    const p = resultados[i];
-    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
-  }
-  return resposta;
-}
-
-  const termo = termoBusca.toLowerCase();
-  const resultados = produtos.filter(p => 
-    (p[1] || "").toLowerCase().includes(termo) || 
-    (p[2] || "").toLowerCase().includes(termo)
-  );
-  
-  if (resultados.length === 0) {
-    return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
-  }
-  
-  let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
   for (let i = 0; i < Math.min(resultados.length, 5); i++) {
     const p = resultados[i];
     resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
@@ -131,17 +109,9 @@ async function estoqueBaixo(produtos) {
   }
   return resposta;
 }
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`));
-
-// ==========================================
-// ⚙️ SETOR DE CONFIGURAÇÕES (ALTERE APENAS AQUI)
-// ==========================================
-
-const CONFIG = {
-  MAX_RESULTADOS: 10,
-  BUSCAR_POR_NOME: true,
-  BUSCAR_POR_SKU: true,
-  MOSTRAR_PRECO: true,
-  MOSTRAR_EMOJI_ESTOQUE: true
-};
+app.listen(PORT, () => {
+  console.log(`🚀 Bot rodando na porta ${PORT}`);
+  console.log(`📡 Webhook URL: https://bot-consulta-estoque.onrender.com/webhook`);
+});
