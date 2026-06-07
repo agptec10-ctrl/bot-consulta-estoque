@@ -75,28 +75,44 @@ async function buscarPlanilha() {
 }
 
 async function buscarProdutos(termoBusca, produtos) {
-  const termo = termoBusca.toLowerCase();
-  const resultados = produtos.filter(p => 
-    (p[1] || "").toLowerCase().includes(termo) || 
-    (p[2] || "").toLowerCase().includes(termo)
-  );
+  // Divide a busca em palavras
+  const palavras = termoBusca.toLowerCase().trim().split(/\s+/);
   
-  if (resultados.length === 0) {
-    return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
-  }
-  
-  let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
-  for (let i = 0; i < Math.min(resultados.length, 10); i++) {
-    const p = resultados[i];
-const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
-const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+  // Tenta do maior número de palavras para o menor
+  for (let numPalavras = palavras.length; numPalavras >= 1; numPalavras--) {
+    // Pega as primeiras 'numPalavras' palavras
+    const termosBusca = palavras.slice(0, numPalavras);
     
-let estoque = p[3] || 0;
-let emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
-
-resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
+    // Filtra produtos que contenham TODAS as palavras atuais
+    const resultados = produtos.filter(p => {
+      const titulo = (p[1] || "").toLowerCase();
+      const sku = (p[2] || "").toLowerCase();
+      const textoBusca = titulo + " " + sku;
+      
+      // Verifica se contém todas as palavras
+      return termosBusca.every(palavra => textoBusca.includes(palavra));
+    });
+    
+    if (resultados.length > 0) {
+      // Encontrou resultados com 'numPalavras' palavras
+      let resposta = `🔍 ${resultados.length} produto(s) encontrado(s) com ${numPalavras} palavra(s):\n\n`;
+      
+      for (let i = 0; i < Math.min(resultados.length, 10); i++) {
+        const p = resultados[i];
+        let estoque = p[3] || 0;
+        let emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
+        const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+        const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+        
+        resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
+      }
+      return resposta;
+    }
   }
-  return resposta;
+  
+  // Nenhuma palavra encontrou nada
+  return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
+}
 }
 
 async function estoqueBaixo(produtos) {
