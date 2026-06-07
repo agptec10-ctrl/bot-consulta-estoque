@@ -124,7 +124,7 @@ app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`));
 // ==========================================
 
 const CONFIG = {
-  MAX_RESULTADOS: 5,
+  MAX_RESULTADOS: 10,
   BUSCAR_POR_NOME: true,
   BUSCAR_POR_SKU: true,
   MOSTRAR_PRECO: true,
