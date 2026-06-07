@@ -8,42 +8,55 @@ const TOKEN = "8748488253:AAE3mEFhsQOWTVZQy9QBB1sbcC8fB40zHZM";
 const SHEET_ID = "1b11H23SDAjJzwXBINRGgyCcOEoOhTIXOMX_qSU-5SbQ";
 const SHEET_NAME = "ANUNCIOS";
 
+// Teste do token
+console.log("Token configurado:", TOKEN.substring(0, 10) + "...");
+
 app.post('/webhook', async (req, res) => {
   try {
     const message = req.body.message;
-    if (!message || !message.text) return res.sendStatus(200);
+    if (!message || !message.text) {
+      return res.sendStatus(200);
+    }
     
     const chatId = message.chat.id;
     const texto = message.text;
     
-    console.log(`Mensagem: ${texto}`);
+    console.log(`Mensagem recebida: ${texto}`);
+    console.log(`Chat ID: ${chatId}`);
     
     let resposta;
     
     if (texto === "/start") {
-      resposta = "Bot de Consulta de Estoque - Envie o nome do produto";
-    } else if (texto === "/estoque_baixo") {
+      resposta = "🤖 Bot de Consulta de Estoque\n\nEnvie o nome do produto ou SKU";
+    } 
+    else if (texto === "/estoque_baixo") {
       const produtos = await buscarPlanilha();
       resposta = await estoqueBaixo(produtos);
-    } else {
+    }
+    else {
       const produtos = await buscarPlanilha();
       resposta = await buscarProdutos(texto, produtos);
     }
     
-    await axios.post(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+    console.log("Enviando resposta para o Telegram...");
+    
+    const url = `https://api.telegram.org/bot${TOKEN}/sendMessage`;
+    const response = await axios.post(url, {
       chat_id: chatId,
       text: resposta
     });
     
+    console.log("Resposta enviada com sucesso!");
     res.sendStatus(200);
+    
   } catch (error) {
-    console.log("Erro:", error.message);
+    console.log("ERRO DETALHADO:", error.response?.data || error.message);
     res.sendStatus(200);
   }
 });
 
 app.get('/', (req, res) => {
-  res.send('Bot online');
+  res.send('✅ Bot está online!');
 });
 
 async function buscarPlanilha() {
@@ -57,6 +70,7 @@ async function buscarPlanilha() {
     const row = data.table.rows[i];
     produtos.push(row.c.map(cell => cell ? cell.v : ""));
   }
+  console.log(`Planilha carregada: ${produtos.length} produtos`);
   return produtos;
 }
 
@@ -68,10 +82,10 @@ async function buscarProdutos(termoBusca, produtos) {
   );
   
   if (resultados.length === 0) {
-    return `Nenhum produto encontrado para: "${termoBusca}"`;
+    return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
   }
   
-  let resposta = `${resultados.length} produto(s) encontrado(s):\n\n`;
+  let resposta = `🔍 ${resultados.length} produto(s) encontrado(s):\n\n`;
   for (let i = 0; i < Math.min(resultados.length, 5); i++) {
     const p = resultados[i];
     resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\n-------------------\n`;
@@ -86,15 +100,18 @@ async function estoqueBaixo(produtos) {
   });
   
   if (baixos.length === 0) {
-    return "Nenhum produto com estoque baixo";
+    return "✅ Nenhum produto com estoque baixo";
   }
   
-  let resposta = `PRODUTOS COM ESTOQUE BAIXO:\n\n`;
+  let resposta = `⚠️ ESTOQUE BAIXO (<10):\n\n`;
   for (const p of baixos) {
-    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3]}\n---\n`;
+    resposta += `📦 ${p[1]}\nSKU: ${p[2]}\n⚠️ Estoque: ${p[3]}\n---\n`;
   }
   return resposta;
 }
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Bot rodando na porta ${PORT}`);
+  console.log(`📡 Webhook URL: https://bot-consulta-estoque.onrender.com/webhook`);
+});
