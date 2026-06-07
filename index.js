@@ -90,7 +90,11 @@ async function buscarProdutos(termoBusca, produtos) {
     const p = resultados[i];
 const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
 const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
-resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${p[3] || 0}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
+    
+let estoque = p[3] || 0;
+let emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
+
+resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
   }
   return resposta;
 }
