@@ -116,18 +116,60 @@ async function buscarProdutos(termoBusca, produtos) {
         }
       }
       
+      // ==========================================
+      // CONSTRUÇÃO DA RESPOSTA
+      // ==========================================
       let resposta = `🔍 ${resultados.length} anúncios encontrados, ${resultadosUnicos.length} produto(s) único(s):\n\n`;
       
+      // ==========================================
+      // SEÇÃO 1: ANÚNCIOS (MERCADO LIVRE)
+      // ==========================================
+      resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      resposta += `📢 ANÚNCIOS (MERCADO LIVRE)\n`;
+      resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      
+      // Mostra anúncios (coluna B) - limitado a 10
       for (let i = 0; i < Math.min(resultadosUnicos.length, 10); i++) {
         const p = resultadosUnicos[i];
         const estoque = p[3] || 0;
         const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
         const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+        
+        resposta += `📦 ${p[1]}\n`;
+        resposta += `SKU: ${p[2]}\n`;
+        resposta += `Quantidade: ${emoji} ${estoque}\n`;
+        resposta += `Preço ML: ${precoML}\n`;
+        resposta += `────────────────────────────────────────────────────\n\n`;
+      }
+      
+      // ==========================================
+      // SEÇÃO 2: PRODUTOS ORIGINAIS (ESTOQUE BALCÃO)
+      // ==========================================
+      resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+      resposta += `📦 PRODUTOS ORIGINAIS (ESTOQUE BALCÃO)\n`;
+      resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
+      
+      // Mostra produtos originais (coluna I) - limitado a 10
+      for (let i = 0; i < Math.min(resultadosUnicos.length, 10); i++) {
+        const p = resultadosUnicos[i];
+        const estoque = p[3] || 0;
+        const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
         const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
         const tituloOriginal = p[8] && p[8] !== "" ? p[8] : "";
+        const alocacao = p[9] && p[9] !== "" ? p[9] : "Não informada";
         
-        resposta += `${tituloOriginal ? `📦 ${tituloOriginal}\n\n` : ''}📢 Anúncio: ${p[1]}\nSKU: ${p[2]}\nQuantidade: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
+        if (tituloOriginal) {
+          resposta += `📦 ${tituloOriginal}\n`;
+        } else {
+          resposta += `📦 ${p[1]}\n`;
+        }
+        resposta += `SKU: ${p[2]}\n`;
+        resposta += `Alocação: ${alocacao}\n`;
+        resposta += `Quantidade: ${emoji} ${estoque}\n`;
+        resposta += `Preço Balcão: ${precoBalcao}\n`;
+        resposta += `────────────────────────────────────────────────────\n\n`;
       }
+      
       return resposta;
     }
   }
