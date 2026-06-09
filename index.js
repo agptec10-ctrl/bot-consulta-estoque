@@ -135,7 +135,7 @@ async function buscarProdutos(termoBusca, produtos) {
         const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
         const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
         
-        resposta += `📦 ${p[1]}\n`;
+        resposta += `📢 ${p[1]}\n`;
         resposta += `SKU: ${p[2]}\n`;
         resposta += `Quantidade: ${emoji} ${estoque}\n`;
         resposta += `Preço ML: ${precoML}\n`;
@@ -143,7 +143,8 @@ async function buscarProdutos(termoBusca, produtos) {
       }
       
       // ==========================================
-      // SEÇÃO 2: PRODUTOS ORIGINAIS (ESTOQUE BALCÃO)
+      // ==========================================
+      // SEÇÃO 2: PRODUTOS NO ESTOQUE (ESTOQUE BALCÃO)
       // ==========================================
       resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       resposta += `📦 PRODUTOS NO ESTOQUE (ESTOQUE BALCÃO)\n`;
