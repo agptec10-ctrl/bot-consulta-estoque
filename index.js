@@ -72,24 +72,6 @@ app.get('/', (req, res) => {
 // ==========================================
 // BUSCAR DADOS NA PLANILHA
 // ==========================================
-async function buscarPlanilha() {
-  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
-  const response = await axios.get(url);
-  const jsonStr = response.data.substring(47).slice(0, -2);
-  const data = JSON.parse(jsonStr);
-  
-  const produtos = [];
-  for (let i = 1; i < data.table.rows.length; i++) {
-    const row = data.table.rows[i];
-    produtos.push(row.c.map(cell => cell ? cell.v : ""));
-  }
-  console.log(`Planilha carregada: ${produtos.length} produtos`);
-  return produtos;
-}
-
-// ==========================================
-// BUSCAR PRODUTOS (COM ACENTOS E MULTIPLAS PALAVRAS)
-// ==========================================
 async function buscarProdutos(termoBusca, produtos) {
   const termoSemAcento = removerAcentos(termoBusca.toLowerCase());
   const palavras = termoSemAcento.trim().split(/\s+/);
@@ -105,22 +87,35 @@ async function buscarProdutos(termoBusca, produtos) {
     });
     
     if (resultados.length > 0) {
-      let resposta = `🔍 ${resultados.length} produto(s) encontrado(s) com ${numPalavras} palavra(s):\n\n`;
+      // Remove duplicatas por SKU
+      const skusVistos = new Set();
+      const resultadosUnicos = [];
+      for (const p of resultados) {
+        const sku = p[2] || "SEM_SKU";
+        if (!skusVistos.has(sku)) {
+          skusVistos.add(sku);
+          resultadosUnicos.push(p);
+        }
+      }
       
-      for (let i = 0; i < Math.min(resultados.length, 10); i++) {
-        const p = resultados[i];
+      let resposta = `🔍 ${resultados.length} anúncios encontrados, ${resultadosUnicos.length} produto(s) único(s):\n\n`;
+      
+      for (let i = 0; i < Math.min(resultadosUnicos.length, 10); i++) {
+        const p = resultadosUnicos[i];
         const estoque = p[3] || 0;
         const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
         const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
         const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
+        const tituloOriginal = p[8] && p[8] !== "" ? p[8] : p[1];
         
-        resposta += `📦 ${p[1]}\nSKU: ${p[2]}\nEstoque: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
+        resposta += `📦 ${tituloOriginal}\n📢 Anúncio: ${p[1]}\nSKU: ${p[2]}\nQuantidade: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
       }
       return resposta;
     }
   }
   
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
+}
 }
 
 // ==========================================
