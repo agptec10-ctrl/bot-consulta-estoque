@@ -4,7 +4,7 @@ const axios = require('axios');
 const app = express();
 app.use(express.json());
 
-const TOKEN = "8748488253:AAE3mEFhsQOWTVZQy9QBB1sbcC8fB40zHZM";
+const TOKEN = "8981952623:AAFkQ_6zgt5mpCmBKNh9gx4q-rak8osPkRc";
 const SHEET_ID = "1b11H23SDAjJzwXBINRGgyCcOEoOhTIXOMX_qSU-5SbQ";
 const SHEET_NAME = "ANUNCIOS";
 
