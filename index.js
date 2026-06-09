@@ -143,8 +143,6 @@ async function buscarProdutos(termoBusca, produtos) {
       }
       
       // ==========================================
-      // ==========================================
-      // ==========================================
       // SEÇÃO 2: PRODUTOS NO ESTOQUE (ESTOQUE BALCÃO)
       // ==========================================
       resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
@@ -178,7 +176,10 @@ async function buscarProdutos(termoBusca, produtos) {
       // Se não mostrou nenhum produto, avisa
       if (contadorProdutos === 0) {
         resposta += `ℹ️ Nenhum produto com título original e preço Balcão cadastrado.\n\n`;
+      }
       
+      return resposta;
+    }
   }
   
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
