@@ -178,7 +178,7 @@ async function buscarProdutos(termoBusca, produtos) {
       // Se não mostrou nenhum produto, avisa
       if (contadorProdutos === 0) {
         resposta += `ℹ️ Nenhum produto com título original e preço Balcão cadastrado.\n\n`;
-      }
+      
   }
   
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
