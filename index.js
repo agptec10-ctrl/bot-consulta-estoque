@@ -144,35 +144,41 @@ async function buscarProdutos(termoBusca, produtos) {
       
       // ==========================================
       // ==========================================
+      // ==========================================
       // SEÇÃO 2: PRODUTOS NO ESTOQUE (ESTOQUE BALCÃO)
       // ==========================================
       resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
       resposta += `📦 PRODUTOS NO ESTOQUE (ESTOQUE BALCÃO)\n`;
       resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
       
-      // Mostra produtos originais (coluna I) - limitado a 10
-      for (let i = 0; i < Math.min(resultadosUnicos.length, 10); i++) {
+      // Mostra produtos originais (coluna I) - SOMENTE se tiver título original
+      let contadorProdutos = 0;
+      for (let i = 0; i < resultadosUnicos.length && contadorProdutos < 10; i++) {
         const p = resultadosUnicos[i];
-        const estoque = p[3] || 0;
-        const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
-        const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
         const tituloOriginal = p[8] && p[8] !== "" ? p[8] : "";
-        const alocacao = p[9] && p[9] !== "" ? p[9] : "Não informada";
+        const precoBalcao = p[7] && p[7] !== "" && parseFloat(p[7]) > 0 ? p[7] : null;
         
-        if (tituloOriginal) {
+        // SÓ MOSTRA SE TIVER TÍTULO ORIGINAL (coluna I) E PREÇO BALCÃO VÁLIDO
+        if (tituloOriginal && precoBalcao !== null) {
+          const estoque = p[3] || 0;
+          const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
+          const precoBalcaoFmt = `R$ ${parseFloat(precoBalcao).toFixed(2).replace('.', ',')}`;
+          const alocacao = p[9] && p[9] !== "" ? p[9] : "Não informada";
+          
           resposta += `📦 ${tituloOriginal}\n`;
-        } else {
-          resposta += `📦 ${p[1]}\n`;
+          resposta += `SKU: ${p[2]}\n`;
+          resposta += `Alocação: ${alocacao}\n`;
+          resposta += `Quantidade: ${emoji} ${estoque}\n`;
+          resposta += `Preço Balcão: ${precoBalcaoFmt}\n`;
+          resposta += `────────────────────────────────────────────────────\n\n`;
+          contadorProdutos++;
         }
-        resposta += `SKU: ${p[2]}\n`;
-        resposta += `Alocação: ${alocacao}\n`;
-        resposta += `Quantidade: ${emoji} ${estoque}\n`;
-        resposta += `Preço Balcão: ${precoBalcao}\n`;
-        resposta += `────────────────────────────────────────────────────\n\n`;
       }
       
-      return resposta;
-    }
+      // Se não mostrou nenhum produto, avisa
+      if (contadorProdutos === 0) {
+        resposta += `ℹ️ Nenhum produto com título original e preço Balcão cadastrado.\n\n`;
+      }
   }
   
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
