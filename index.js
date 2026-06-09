@@ -24,6 +24,24 @@ function removerAcentos(texto) {
 }
 
 // ==========================================
+// BUSCAR DADOS NA PLANILHA
+// ==========================================
+async function buscarPlanilha() {
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${SHEET_NAME}`;
+  const response = await axios.get(url);
+  const jsonStr = response.data.substring(47).slice(0, -2);
+  const data = JSON.parse(jsonStr);
+  
+  const produtos = [];
+  for (let i = 1; i < data.table.rows.length; i++) {
+    const row = data.table.rows[i];
+    produtos.push(row.c.map(cell => cell ? cell.v : ""));
+  }
+  console.log(`Planilha carregada: ${produtos.length} produtos`);
+  return produtos;
+}
+
+// ==========================================
 // WEBHOOK DO TELEGRAM
 // ==========================================
 app.post('/webhook', async (req, res) => {
@@ -70,7 +88,7 @@ app.get('/', (req, res) => {
 });
 
 // ==========================================
-// BUSCAR DADOS NA PLANILHA
+// BUSCAR PRODUTOS
 // ==========================================
 async function buscarProdutos(termoBusca, produtos) {
   const termoSemAcento = removerAcentos(termoBusca.toLowerCase());
@@ -115,7 +133,6 @@ async function buscarProdutos(termoBusca, produtos) {
   }
   
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
-}
 }
 
 // ==========================================
