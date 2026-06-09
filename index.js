@@ -146,7 +146,7 @@ async function buscarProdutos(termoBusca, produtos) {
       // SEÇÃO 2: PRODUTOS ORIGINAIS (ESTOQUE BALCÃO)
       // ==========================================
       resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
-      resposta += `📦 PRODUTOS ORIGINAIS (ESTOQUE BALCÃO)\n`;
+      resposta += `📦 PRODUTOS NO ESTOQUE (ESTOQUE BALCÃO)\n`;
       resposta += `━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n\n`;
       
       // Mostra produtos originais (coluna I) - limitado a 10
