@@ -124,9 +124,9 @@ async function buscarProdutos(termoBusca, produtos) {
         const emoji = estoque <= 0 ? "❌" : (estoque < 10 ? "⚠️" : "✅");
         const precoML = p[4] ? `R$ ${parseFloat(p[4]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
         const precoBalcao = p[7] ? `R$ ${parseFloat(p[7]).toFixed(2).replace('.', ',')}` : 'R$ 0,00';
-        const tituloOriginal = p[8] && p[8] !== "" ? p[8] : p[1];
+        const tituloOriginal = p[8] && p[8] !== "" ? p[8] : "";
         
-        resposta += `📦 ${tituloOriginal}\n📢 Anúncio: ${p[1]}\nSKU: ${p[2]}\nQuantidade: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
+        resposta += `${tituloOriginal ? `📦 ${tituloOriginal}\n\n` : ''}📢 Anúncio: ${p[1]}\nSKU: ${p[2]}\nQuantidade: ${emoji} ${estoque}\nPreço ML: ${precoML}\nPreço Balcão: ${precoBalcao}\n-------------------\n`;
       }
       return resposta;
     }
