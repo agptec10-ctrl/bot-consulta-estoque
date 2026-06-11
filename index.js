@@ -105,21 +105,30 @@ async function buscarProdutos(termoBusca, produtos) {
     palavras = termoSemAcento.trim().split(/\s+/);
   }
   
+  // Tenta do maior número de palavras para o menor
   for (let numPalavras = palavras.length; numPalavras >= 1; numPalavras--) {
-    const termosBusca = palavras.slice(0, numPalavras);
+    // Gera todas as combinações possíveis de 'numPalavras' palavras
+    const combinacoes = gerarCombinacoes(palavras, numPalavras);
+    let melhoresResultados = [];
     
-    const resultados = produtos.filter(p => {
-      const titulo = removerAcentos((p[1] || "").toLowerCase());
-      const sku = removerAcentos((p[2] || "").toLowerCase());
-      const textoBusca = titulo + " " + sku;
-      return termosBusca.every(palavra => textoBusca.includes(palavra));
-    });
+    for (const combinacao of combinacoes) {
+      const resultados = produtos.filter(p => {
+        const titulo = removerAcentos((p[1] || "").toLowerCase());
+        const sku = removerAcentos((p[2] || "").toLowerCase());
+        const textoBusca = titulo + " " + sku;
+        return combinacao.every(palavra => textoBusca.includes(palavra));
+      });
+      
+      if (resultados.length > melhoresResultados.length) {
+        melhoresResultados = resultados;
+      }
+    }
     
-    if (resultados.length > 0) {
+    if (melhoresResultados.length > 0) {
       // Remove duplicatas por SKU
       const skusVistos = new Set();
       const resultadosUnicos = [];
-      for (const p of resultados) {
+      for (const p of melhoresResultados) {
         const sku = p[2] || "SEM_SKU";
         if (!skusVistos.has(sku)) {
           skusVistos.add(sku);
@@ -130,7 +139,7 @@ async function buscarProdutos(termoBusca, produtos) {
       // ==========================================
       // CONSTRUÇÃO DA RESPOSTA
       // ==========================================
-      let resposta = `🔍 ${resultados.length} anúncios encontrados, ${resultadosUnicos.length} produto(s) único(s):\n\n`;
+      let resposta = `🔍 ${melhoresResultados.length} anúncios encontrados, ${resultadosUnicos.length} produto(s) único(s):\n\n`;
       
       // ==========================================
       // SEÇÃO 1: ANÚNCIOS (MERCADO LIVRE)
@@ -194,6 +203,28 @@ async function buscarProdutos(termoBusca, produtos) {
   }
   
   return `🔍 Nenhum produto encontrado para: "${termoBusca}"`;
+}
+
+// ==========================================
+// FUNÇÃO PARA GERAR COMBINAÇÕES
+// ==========================================
+function gerarCombinacoes(arr, tamanho) {
+  const combinacoes = [];
+  
+  function gerar(inicio, atual) {
+    if (atual.length === tamanho) {
+      combinacoes.push([...atual]);
+      return;
+    }
+    for (let i = inicio; i < arr.length; i++) {
+      atual.push(arr[i]);
+      gerar(i + 1, atual);
+      atual.pop();
+    }
+  }
+  
+  gerar(0, []);
+  return combinacoes;
 }
 
 // ==========================================
