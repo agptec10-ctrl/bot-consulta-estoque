@@ -92,7 +92,18 @@ app.get('/', (req, res) => {
 // ==========================================
 async function buscarProdutos(termoBusca, produtos) {
   const termoSemAcento = removerAcentos(termoBusca.toLowerCase());
-  const palavras = termoSemAcento.trim().split(/\s+/);
+  
+  // Lista de palavras comuns a ignorar
+  const palavrasComuns = ["para", "de", "a", "o", "e", "da", "do", "das", "dos", "em", "um", "uma", "com", "por", "pra", "pro", "na", "no", "nas", "nos"];
+  let palavras = termoSemAcento.trim().split(/\s+/);
+  
+  // Filtra removendo palavras comuns
+  palavras = palavras.filter(palavra => !palavrasComuns.includes(palavra));
+  
+  // Se não sobrou nenhuma palavra, mantém as originais
+  if (palavras.length === 0) {
+    palavras = termoSemAcento.trim().split(/\s+/);
+  }
   
   for (let numPalavras = palavras.length; numPalavras >= 1; numPalavras--) {
     const termosBusca = palavras.slice(0, numPalavras);
